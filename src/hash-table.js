@@ -15,8 +15,8 @@ class HashTable {
     this.storage = new LimitedArray(this.limit);
     oldStorage.each((bucket) => {
       if (!bucket) return;
-      bucket.forEach((pair) => {
-        this.insert(pair[0], pair[1]);
+      bucket.loopList((item) => {
+        this.insert(item.data.keys().next().value, item.data.get(item.data.keys().next().value));
       });
     });
   }
@@ -36,12 +36,13 @@ class HashTable {
   insert(key, value) {
     if (this.capacityIsFull()) this.resize();
     const index = getIndexBelowMax(key.toString(), this.limit);
-    let bucket = this.storage.get(index) || new LinkedList();
+    let bucket = this.storage.get(index);
+    if (!bucket) bucket = new LinkedList();
 
-    if (bucket.contains(key)) {
-      bucket.update(key, value);
+    if (bucket.containsNode(key)) {
+      bucket = bucket.updateNode(key, value);
     }
-    bucket.insert(key, value);
+    bucket.insertNode(key, value);
     this.storage.set(index, bucket);
   }
   // Removes the key, value pair from the hash table
@@ -51,8 +52,8 @@ class HashTable {
     const index = getIndexBelowMax(key.toString(), this.limit);
     let bucket = this.storage.get(index);
 
-    if (!bucket.isEmpty() && bucket.contains(key)) {
-      bucket = bucket.remove(key);
+    if (bucket && bucket.containsNode(key)) {
+      bucket = bucket.removeNode(key);
       this.storage.set(index, bucket);
     }
   }
@@ -63,10 +64,9 @@ class HashTable {
     const index = getIndexBelowMax(key.toString(), this.limit);
     const bucket = this.storage.get(index);
     let retrieved;
-    if (!bucket.isEmpty() && bucket.contains(key)) {
-      retrieved = bucket.retrieve(key);
+    if (bucket && bucket.containsNode(key)) {
+      retrieved = bucket.retrieveNode(key);
     }
-
     return retrieved ? retrieved.data.get(key) : undefined;
   }
 }

@@ -39,25 +39,28 @@ class LinkedList {
   constructor() {
     this.head = null;
     this.tail = null;
+    this.size = 0;
   }
-  insert(key, value) {
+  insertNode(key, value) {
     const mapData = new Map();
     mapData.set(key, value);
     const node = {
       data: mapData,
-      next: null,
+      next: null
     };
     if (!this.head) {
       this.head = node;
       this.tail = this.head;
-    } else if (!this.contains(key)) {
+      this.size++;
+    } else if (!this.containsNode(key)) {
       this.tail.next = node;
       this.tail = node;
+      this.size++;
     } else {
-      this.update(key, value);
+      this.updateNode(key, value);
     }
   }
-  contains(key) {
+  containsNode(key) {
     if (!this.head) return false;
     let myHead = this.head;
     while (myHead.next) {
@@ -66,33 +69,32 @@ class LinkedList {
     }
     return myHead.data.has(key);
   }
-  remove(key) {
-    if (!this.contains(value)) return undefined;
+  removeNode(key) {
+    if (!this.containsNode(key)) return undefined;
     if (this.head.data.has(key)) {
-      const node = this.head;
       this.head = this.head.next;
+      this.size--;
       return this;
-    } else {
-      let current = this.head.next;
-      let previous = this.head;
-      while (current.next) {
-        if (current.data.has(key)) {
-          const node = current;
-          previous.next = current.next;
-          return this;
-        }
-        previous = current;
-        current = current.next;
-      }
-      if (this.tail.data.has(key)) {
-        const node = this.tail;
-        this.tail = previous;
+    }
+    let current = this.head.next;
+    let previous = this.head;
+    while (current.next) {
+      if (current.data.has(key)) {
+        previous.next = current.next;
+        this.size--;
         return this;
       }
+      previous = current;
+      current = current.next;
+    }
+    if (this.tail.data.has(key)) {
+      this.tail = previous;
+      this.size--;
+      return this;
     }
   }
-  retrieve(key) {
-    if (!this.contains(key)) return undefined;
+  retrieveNode(key) {
+    if (!this.containsNode(key)) return undefined;
     let current = this.head;
     while (current.next) {
       if (current.data.has(key)) return current;
@@ -100,16 +102,26 @@ class LinkedList {
     }
     if (this.tail.data.has(key)) return this.tail;
   }
-  update(key, value) {
-    if (this.contains(key)) {
-      const node = this.retrieve(key);
+  updateNode(key, value) {
+    if (this.containsNode(key)) {
+      const node = this.retrieveNode(key);
       node.data.set(key, value);
     }
+    return this;
   }
-  isEmpty() {
-    return this.head === null ? true : false;
+  loopList(cb) {
+    let current = this.head;
+    if (!current) return;
+    for (let i = 0; i < this.size; i++) {
+      cb(current);
+      if (current.next) {
+        current = current.next;
+      } else {
+        return;
+      }
+    }
   }
-} 
+}
 
 /* eslint-disable no-bitwise, operator-assignment */
 // This is hash function you'll be using to hash keys
@@ -129,5 +141,5 @@ const getIndexBelowMax = (str, max) => {
 module.exports = {
   LimitedArray,
   getIndexBelowMax,
-  LinkedList,
+  LinkedList
 };
